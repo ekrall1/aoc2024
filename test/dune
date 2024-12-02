@@ -1,3 +1,4 @@
 (test
  (name test_aoc2024)
- (libraries base stdio))
+ (modules test_aoc2024)
+ (libraries days base stdio))
