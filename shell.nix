@@ -8,6 +8,7 @@ in
     buildInputs = with pkgs; [
       dune_3
       gnumake
+      opam
     ] ++ ( with ocamlPackages;
     [
       ocaml
@@ -17,5 +18,6 @@ in
       utop
       ocamlformat
       ocp-indent
+      ocaml-lsp
     ]);
   }

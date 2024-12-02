@@ -1,1 +1,22 @@
-let () = print_endline "Hello, World!"
+open Stdio
+
+let day_of_advent = ref 0
+let input_file = ref ""
+let anon_fun filename = input_file := filename
+
+let arglist =
+  [
+    ("-day-of-advent", Arg.Set_int day_of_advent, "day number");
+    ("-input", Arg.Set_string input_file, "input file");
+  ]
+
+let usage_msg = {|aoc2024 -day-of-advent <number> -input-file <file_name>|}
+
+let () =
+  let () = Arg.parse arglist anon_fun usage_msg in
+  let part1 =
+    match !day_of_advent with
+    | 1 -> Days.D1.(part1)
+    | _ -> failwith "Invalid day"
+  in
+  printf "Part 1 solution is %s\n\n" (part1 !input_file)
