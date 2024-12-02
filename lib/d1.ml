@@ -51,5 +51,19 @@ let solve_part_1 (Input i : problem_input) =
   List.fold2_exn col1 col2 ~init:0 ~f:(fun acc a b -> acc + abs (a - b))
   |> Int.to_string
 
+let get_count (num : int) (lst : int list) =
+  List.fold_left lst ~init:0 ~f:(fun count a ->
+      if a = num then count + 1 else count)
+
+let solve_part_2 (Input i : problem_input) =
+  (*similarity score*)
+  let col1 = List.map ~f:List.hd_exn i in
+  let col2 = List.map ~f:(fun lst -> List.nth_exn lst 1) i in
+  List.fold_left col1 ~init:0 ~f:(fun acc a -> acc + (a * get_count a col2))
+  |> Int.to_string
+
 let part1 (file_name : string) : string =
   file_name |> read_input_file |> make_lists |> solve_part_1
+
+let part2 (file_name : string) : string =
+  file_name |> read_input_file |> make_lists |> solve_part_2
