@@ -28,10 +28,7 @@ let parts_to_int (parts : string list) : int list =
   (* convert list of two strings to list of two ints*)
   if List.length parts <> 2 then failwith ("invalid input" ^ String.concat parts)
   else
-    [
-      Int.of_string (Stdlib.List.nth parts 0);
-      Int.of_string (Stdlib.List.nth parts 1);
-    ]
+    [ Int.of_string (List.hd_exn parts); Int.of_string (List.nth_exn parts 1) ]
 
 let make_lists (string_input : string) : problem_input =
   (* form input lists from string input*)
