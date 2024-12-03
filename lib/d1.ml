@@ -1,17 +1,8 @@
 open Base
 open Str
+open Read_input
 
 type problem_input = Input of int list list
-
-let read_input_file (file_name : string) : string =
-  (* read the input file and return a single string *)
-  let input_channel = Stdlib.open_in file_name in
-  let string_input =
-    Stdlib.really_input_string input_channel
-      (Stdlib.in_channel_length input_channel)
-  in
-  Stdlib.close_in input_channel;
-  string_input
 
 let string_to_lines string_input =
   (* parse input string to a list of strings (lines)*)
@@ -60,7 +51,7 @@ let solve_part_2 (Input i : problem_input) =
   |> Int.to_string
 
 let part1 (file_name : string) : string =
-  file_name |> read_input_file |> make_lists |> solve_part_1
+  file_name |> Read_input.read_input_file |> make_lists |> solve_part_1
 
 let part2 (file_name : string) : string =
-  file_name |> read_input_file |> make_lists |> solve_part_2
+  file_name |> Read_input.read_input_file |> make_lists |> solve_part_2

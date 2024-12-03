@@ -12,7 +12,8 @@ let arglist =
     ("-input", Arg.Set_string input_file, "input file");
   ]
 
-let usage_msg = {|aoc2024 -day-of-advent <number> -input-file <file_name>|}
+let usage_msg =
+  {|aoc2024 -day-of-advent <number> -part <number> -input-file <filename>|}
 
 let () =
   let () = Arg.parse arglist anon_fun usage_msg in
@@ -20,6 +21,7 @@ let () =
     match !day_of_advent with
     | 1 -> (Days.D1.part1, Days.D1.part2)
     | 2 -> (Days.D2.part1, Days.D2.part2)
+    | 3 -> (Days.D3.part1, Days.D3.part2)
     | _ -> failwith "Invalid day"
   in
 

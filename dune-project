@@ -5,11 +5,11 @@
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github ekrall1/aoc2024))
 
-(authors "Author Name")
+(authors "Eric Krall")
 
-(maintainers "Maintainer Name")
+(maintainers "Eric Krall")
 
 (license LICENSE)
 
@@ -17,10 +17,11 @@
 
 (package
  (name aoc2024)
- (synopsis "A short synopsis")
- (description "A longer description")
+ (synopsis "AOC2024 project")
+ (description "AOC2024 project")
  (depends ocaml dune)
  (tags
-  (topics "to describe" your project)))
+  ("ocaml" "advent-of-code" "nixos"))
+)
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/reference/dune-project/index.html

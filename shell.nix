@@ -19,5 +19,6 @@ in
       ocamlformat
       ocp-indent
       ocaml-lsp
+      re
     ]);
   }
