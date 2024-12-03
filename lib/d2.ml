@@ -56,16 +56,38 @@ let valid_dec (lst : int list) =
           | _ -> None)
       |> Option.is_some
 
-let strictly_inc_or_dec (lst : int list) = valid_inc lst || valid_dec lst
+let valid_inc_or_dec (lst : int list) = valid_inc lst || valid_dec lst
+
+let rec_valid_inc_or_dec (lst : int list) =
+  if valid_inc_or_dec lst then true
+  else
+    let rec remove_idx lst idx =
+      match idx >= List.length lst with
+      | true -> false
+      | false ->
+          (* remove element and check again *)
+          if valid_inc_or_dec (List.filteri ~f:(fun i _ -> i <> idx) lst) then
+            true
+          else remove_idx lst (idx + 1)
+    in
+    remove_idx lst 0
 
 let solve_part_1 (Input i : problem_input) =
-  let mapped_bools = List.map ~f:strictly_inc_or_dec i in
+  let safe_reports = List.map ~f:valid_inc_or_dec i in
   List.fold_left ~init:0
     ~f:(fun count x -> if x then count + 1 else count)
-    mapped_bools
+    safe_reports
+  |> Int.to_string
+
+let solve_part_2 (Input i : problem_input) =
+  let safe_reports = List.map ~f:rec_valid_inc_or_dec i in
+  List.fold_left ~init:0
+    ~f:(fun count x -> if x then count + 1 else count)
+    safe_reports
   |> Int.to_string
 
 let part1 (file_name : string) : string =
   file_name |> read_input_file |> make_reports |> solve_part_1
 
-let part2 (file_name : string) : string = file_name |> read_input_file
+let part2 (file_name : string) : string =
+  file_name |> read_input_file |> make_reports |> solve_part_2
