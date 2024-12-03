@@ -1,5 +1,4 @@
 open Stdio
-module Day1 = Days.D1
 
 let day_of_advent = ref 0
 let part = ref 0
@@ -19,7 +18,8 @@ let () =
   let () = Arg.parse arglist anon_fun usage_msg in
   let part1_fn, part2_fn =
     match !day_of_advent with
-    | 1 -> (Day1.part1, Day1.part2)
+    | 1 -> (Days.D1.part1, Days.D1.part2)
+    | 2 -> (Days.D2.part1, Days.D2.part2)
     | _ -> failwith "Invalid day"
   in
 
