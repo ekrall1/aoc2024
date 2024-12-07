@@ -25,6 +25,7 @@ let () =
     | 4 -> (Days.D4.part1, Days.D4.part2)
     | 5 -> (Days.D5.part1, Days.D5.part2)
     | 6 -> (Days.D6.part1, Days.D6.part2)
+    | 7 -> (Days.D7.part1, Days.D7.part2)
     | _ -> failwith "Invalid day"
   in
 
