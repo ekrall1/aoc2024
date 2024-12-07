@@ -18,3 +18,13 @@ let () = assert (Days.D3.part2 day3_test_input2 = "48")
 let day4_test_input = "../../../test/d4_test"
 let () = assert (Days.D4.part1 day4_test_input = "18")
 let () = assert (Days.D4.part2 day4_test_input = "9")
+
+(* day 5 tests *)
+let day5_test_input = "../../../test/d5_test"
+let () = assert (Days.D5.part1 day5_test_input = "143")
+let () = assert (Days.D5.part2 day5_test_input = "123")
+
+(* day 6 tests*)
+let day6_test_input = "../../../test/d6_test"
+let () = assert (Days.D6.part1 day6_test_input = "41")
+let () = assert (Days.D6.part2 day6_test_input = "6")
