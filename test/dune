@@ -1,4 +1,8 @@
 (test
  (name test_aoc2024)
  (modules test_aoc2024)
- (libraries days base stdio))
+ (libraries days base stdio)
+ (preprocess
+  (pps ppx_jane)))
+
+(copy_files# ../test_data/*)

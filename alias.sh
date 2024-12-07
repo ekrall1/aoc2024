@@ -1,1 +1,1 @@
-alias aoc2024=$(pwd)/_build/default/bin/main.exe
+alias aoc2024=$(pwd)/result/bin/main.exe

@@ -4,10 +4,6 @@ open Read_input
 
 type problem_input = Input of int list list
 
-let string_to_lines string_input =
-  (* parse input string to a list of strings (lines)*)
-  Stdlib.String.split_on_char '\n' string_input
-
 let parse_line_to_parts (line : string) : string list =
   (* parse each line into a list of strings, one for each number*)
   let modified_str =
@@ -23,7 +19,7 @@ let parts_to_int (parts : string list) : int list =
 
 let make_lists (string_input : string) : problem_input =
   (* form input lists from string input*)
-  string_to_lines string_input
+  Read_input.string_to_lines string_input
   |> List.map ~f:(fun line ->
          let parts = parse_line_to_parts line in
          parts_to_int parts)

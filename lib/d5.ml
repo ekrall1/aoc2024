@@ -3,7 +3,7 @@ open Read_input
 
 let string_to_lines_ordering_rules string_input =
   (* parse input string to a list of strings (lines) that contain the character '|'*)
-  Stdlib.String.split_on_char '\n' string_input
+  Read_input.string_to_lines string_input
   |> List.filter ~f:(fun x -> String.mem x '|')
   |> List.map ~f:(fun i -> String.split ~on:'|' i)
 

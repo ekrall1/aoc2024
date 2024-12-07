@@ -1,0 +1,39 @@
+name: 'this-is-not-a-github-workflow'
+on:
+  pull_request:
+  push:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  format-and-test:
+    name: run-format-and-test-checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: install-nix
+        uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      - name: run-format-and-test
+        run: nix flake check
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    needs: [format-and-test]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: install-nix
+        uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      - name: build-aoc2024
+        run: nix build
+      - name: archive-build
+        uses: actions/upload-artifact@v4
+        with:
+          name: aoc2024-build-artifact
+          path: result/bin/main.exe
+          retention-days: 3

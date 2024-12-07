@@ -1,10 +1,6 @@
 open Base
 open Read_input
 
-let string_to_lines string_input =
-  (* parse input string to a list of strings (lines)*)
-  Stdlib.String.split_on_char '\n' string_input
-
 let dirs = [ (1, 0); (-1, 0); (0, 1); (0, -1) ]
 
 let get_initial_coords (grid : string list) =
@@ -102,7 +98,7 @@ let part2_check coords orientation grid =
   List.fold_left !checks ~init:0 ~f:(fun acc i -> if i then acc + 1 else acc)
 
 let solve_part_1 (input : string) =
-  let grid = string_to_lines input in
+  let grid = Read_input.string_to_lines input in
   let orientation = List.nth_exn dirs 1 in
   let coords = get_initial_coords grid in
   match coords with
@@ -110,7 +106,7 @@ let solve_part_1 (input : string) =
   | None -> failwith "cannot find coordinates"
 
 let solve_part_2 (input : string) =
-  let grid = string_to_lines input in
+  let grid = Read_input.string_to_lines input in
   let orientation = List.nth_exn dirs 1 in
   let coords = get_initial_coords grid in
   match coords with

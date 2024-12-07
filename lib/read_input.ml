@@ -27,4 +27,19 @@ module Read_input = struct
         Stdlib.Printf.eprintf "Unexpected error reading file %s, msg: %s\n"
           file_name (Exn.to_string ex);
         ""
+
+  let string_to_lines string_input =
+    (* parse input string to a list of strings (lines)*)
+    (* remove trailing lines*)
+    let input_lines = Stdlib.String.split_on_char '\n' string_input in
+
+    let rec remove_trailing lines =
+      match lines with
+      | [] -> []
+      | "" :: rest -> remove_trailing rest
+      | _ -> lines
+    in
+
+    let cleaned = remove_trailing (List.rev input_lines) in
+    List.rev cleaned
 end

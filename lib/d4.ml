@@ -27,10 +27,6 @@ let is_ok_true = function
   | Base.List.Or_unequal_lengths.Ok true -> true
   | _ -> false
 
-let string_to_lines string_input =
-  (* parse input string to a list of strings (lines)*)
-  Stdlib.String.split_on_char '\n' string_input
-
 let rows_cols_length (lst : string list) =
   let rows = List.length lst in
   let cols =
@@ -109,12 +105,12 @@ let search_for_mas_occurrences lst (row_len, col_len) =
   !results
 
 let solve_part_1 (input : string) =
-  let grid = string_to_lines input in
+  let grid = Read_input.string_to_lines input in
   let row_len, col_len = rows_cols_length grid in
   search_for_all_occurrences grid (row_len, col_len) |> Int.to_string
 
 let solve_part_2 (input : string) =
-  let grid = string_to_lines input in
+  let grid = Read_input.string_to_lines input in
   let row_len, col_len = rows_cols_length grid in
   search_for_mas_occurrences grid (row_len, col_len) |> Int.to_string
 

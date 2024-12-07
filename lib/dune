@@ -1,3 +1,5 @@
 (library
  (name days)
- (libraries base stdio str re))
+ (libraries base stdio str re)
+ (preprocess
+  (pps ppx_jane)))

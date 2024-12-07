@@ -2,10 +2,6 @@ open Base
 open Read_input
 open Str
 
-let string_to_lines string_input =
-  (* parse input string to a list of strings (lines)*)
-  Stdlib.String.split_on_char '\n' string_input
-
 let apply_operator op a b =
   match op with
   | '+' -> a + b
@@ -34,8 +30,7 @@ let rec get_combinations n operators =
 let evaluate_with_operators lhs operators =
   let rec operate_on_lhs acc lhs operators =
     match (lhs, operators) with
-    | [], [] ->
-        acc
+    | [], [] -> acc
     | _ :: [], [] -> acc
     | x :: xs, op :: ops ->
         let new_acc = apply_operator op acc x in
@@ -58,7 +53,7 @@ let try_operators (vals : int * int list) (operators : char list) =
   Option.map found ~f:(fun _ -> rhs)
 
 let solve_part_with_operators input operators =
-  let lines = string_to_lines input in
+  let lines = Read_input.string_to_lines input in
   let answers =
     List.map lines ~f:(fun x -> try_operators (get_lhs_rhs x) operators)
   in
