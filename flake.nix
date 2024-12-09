@@ -40,6 +40,7 @@
 
         shellHook = ''
           echo "Entering development shell"
+          export DUNE_BUILD_DIR=./result/_build
           source ./alias.sh
         '';
       };
@@ -80,8 +81,8 @@
             '';
 
             installPhase = ''
-              mkdir -p $out/bin
-              cp $(pwd)/_build/default/bin/main.exe $out/bin/
+              mkdir -p $out/_build
+              cp -r $(pwd)/_build/* $out/_build/
             '';
 
           };
@@ -125,8 +126,8 @@
               }
               ''
                 dune fmt \
-                  --root="${./.}" \
-                  --build-dir="$(pwd)/_build"
+                --root="${./.}" \
+                --build-dir="$(pwd)/_build"
                 touch $out
               '';
         };

@@ -37,5 +37,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: aoc2024-build-artifact
-          path: result/bin/main.exe
+          path: result/_build/default/bin/main.exe
           retention-days: 3
