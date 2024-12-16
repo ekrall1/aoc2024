@@ -6,13 +6,11 @@ Start development environment
 
     nix develop
 
-Build executable
+Within the dev environment:
 
-    nix build
-
-Run formatting and unit tests
-
-    nix flake check
+    dune build (builds the project)
+    dune runtest (runs tests)
+    utop (repl)
 
 Get the solution for a specific day/part
 
