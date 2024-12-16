@@ -40,7 +40,7 @@
 
         shellHook = ''
           echo "Entering development shell"
-          export DUNE_BUILD_DIR=./result/_build
+          #export DUNE_BUILD_DIR=./result/_build
           source ./alias.sh
         '';
       };
