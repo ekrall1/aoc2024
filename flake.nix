@@ -64,14 +64,17 @@
 
             minimalOcamlVersion = "5.2";
 
-            buildInputs = with ocamlPackages; [
-              ocaml
-              base
-              stringext
-              re
-              ppx_jane
-              z3
-            ];
+            buildInputs =
+              with pkgs;
+              [ z3 ]
+              ++ (with ocamlPackages; [
+                ocaml
+                base
+                stringext
+                re
+                ppx_jane
+                z3
+              ]);
 
             unpackPhase = "true";
 
