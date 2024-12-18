@@ -19,7 +19,7 @@
  (name aoc2024)
  (synopsis "AOC2024 project")
  (description "AOC2024 project")
- (depends ocaml dune)
+ (depends ocaml dune z3)
  (tags
   ("ocaml" "advent-of-code" "nixos"))
 )

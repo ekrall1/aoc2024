@@ -1,7 +1,7 @@
 (test
  (name test_aoc2024)
  (modules test_aoc2024)
- (libraries days base stdio)
+ (libraries days base stdio z3)
  (preprocess
   (pps ppx_jane)))
 

@@ -25,6 +25,7 @@
             dune_3
             gnumake
             opam
+            z3
           ]
           ++ (with ocamlPackages; [
             ocaml
@@ -36,11 +37,11 @@
             ocaml-lsp
             re
             ppx_jane
+            z3
           ]);
 
         shellHook = ''
           echo "Entering development shell"
-          #export DUNE_BUILD_DIR=./result/_build
           source ./alias.sh
         '';
       };
@@ -69,6 +70,7 @@
               stringext
               re
               ppx_jane
+              z3
             ];
 
             unpackPhase = "true";
