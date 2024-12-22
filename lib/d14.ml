@@ -68,7 +68,6 @@ let map_input_tuples_to_coords lst width height s =
 let extract_quadrant_count q hm = Hashtbl.find hm q |> Option.value ~default:0
 
 let quadrants = [ 1; 2; 3; 4 ]
-let all_pos = [ 1; 2; 3; 4; 5 ]
 
 let solve_part_1 lst width height s =
   let hm = map_input_tuples_to_quadrants lst width height s in
