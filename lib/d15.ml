@@ -293,10 +293,5 @@ let part2 (file_name : string) =
   let directions = List.last_exn input in
   let transform = transform_grid_p2 grid_array in
   let transformed_grid = fst transform in
-  Array.iter transformed_grid ~f:(fun x ->
-      let z = Array.length transformed_grid.(0) in
-      Array.iteri x ~f:(fun i y ->
-          Stdlib.Printf.printf "%c" y;
-          if i = z - 1 then Stdlib.Printf.printf "\n"));
   let robot = snd transform in
   solve_part_2 transformed_grid directions robot
