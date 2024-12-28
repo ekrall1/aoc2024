@@ -97,6 +97,7 @@ let day17_test_input3 = "../test_data/d17_test3"
 let day17_test_input4 = "../test_data/d17_test4"
 let day17_test_input5 = "../test_data/d17_test5"
 let day17_test_input6 = "../test_data/d17_test6"
+let day17_test_input7 = "../test_data/d17_test7"
 
 let () =
   assert (
@@ -127,3 +128,5 @@ let () =
 
 let () = assert (Days.D17.part1 day17_test_input5 = "")
 let () = assert (Days.D17.part1 day17_test_input6 = "4,6,3,5,6,3,5,2,1,0")
+let () = assert (Days.D17.part1 day17_test_input6 = "5,7,3,0")
+let () = assert (Days.D17.part2 day17_test_input7 = "117440")

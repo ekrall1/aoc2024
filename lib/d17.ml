@@ -60,10 +60,9 @@ let jnz (operand : int) reg =
 
   if Int.equal reg_a 0 then None else Some operand
 
-let bxc operand reg =
+let bxc _ reg =
   (*The bxc instruction (opcode 4) calculates the bitwise XOR of register B and register C,
     then stores the result in register B.*)
-  Stdlib.Printf.printf "Ignoring operand %d in bxc.\n" operand;
   match reg with
   | Registers { a = reg_a; b = reg_b; c = reg_c } ->
       Registers { a = reg_a; b = Int.bit_xor reg_b reg_c; c = reg_c }
@@ -105,9 +104,7 @@ let get_combo_operand operand reg =
   | 7 -> operand
   | _ -> failwith "invalid operand"
 
-let solve_part_1 input =
-  let data = parse_input input in
-
+let solve_part_1 data =
   let reg, prg = match data with Input { reg; prg } -> (reg, prg) in
 
   let reg_ref = ref reg in
@@ -159,15 +156,61 @@ let solve_part_1 input =
   | Some final_out -> (final_reg, final_out)
   | None -> (final_reg, int_out)
 
-let solve_part_2 input = input
+let get_str_program program =
+  String.concat_array ~sep:"," (Array.map program ~f:(fun i -> Int.to_string i))
+
+let solve_part_2 data =
+  let reg, program = match data with Input { reg; prg } -> (reg, prg) in
+
+  let _, initial_register =
+    match reg with
+    | Registers { a = a_init; b = b_init; c = c_init } ->
+        (a_init, Registers { a = 0; b = b_init; c = c_init })
+  in
+
+  let rec guess_it cur_reg guess idx =
+    let new_a = guess in
+    let new_register =
+      match cur_reg with
+      | Registers { a = _; b; c } -> Registers { a = new_a; b; c }
+    in
+
+    let sub_program =
+      Array.sub program ~pos:idx ~len:(Array.length program - idx)
+    in
+
+    let new_data =
+      match data with
+      | Input { reg = _; prg = _ } ->
+          Input { reg = new_register; prg = program }
+    in
+
+    let ans = snd (solve_part_1 new_data) in
+
+    match String.equal ans (get_str_program sub_program) with
+    | true ->
+        if Int.equal 0 idx then new_a
+        else guess_it new_register (new_a lsl 3) (idx - 1)
+    | false -> guess_it new_register (new_a + 1) idx
+  in
+
+  guess_it initial_register 0 (Array.length program - 1)
 
 let part1_register (file_name : string) : registers =
-  let res = file_name |> Read_input.read_input_file |> solve_part_1 in
+  let res =
+    file_name |> Read_input.read_input_file |> parse_input |> solve_part_1
+  in
   fst res
 
 let part1 (file_name : string) : string =
-  let res = file_name |> Read_input.read_input_file |> solve_part_1 in
+  let res =
+    file_name |> Read_input.read_input_file |> parse_input |> solve_part_1
+  in
   snd res
 
-let part2 (file_name : string) =
-  file_name |> Read_input.read_input_file |> solve_part_2
+let part2 (file_name : string) : string =
+  let data = file_name |> Read_input.read_input_file |> parse_input in
+  let res = solve_part_2 data in
+  Stdlib.Printf.printf "%d\n" res;
+
+  ""
