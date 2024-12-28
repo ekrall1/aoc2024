@@ -211,6 +211,4 @@ let part1 (file_name : string) : string =
 let part2 (file_name : string) : string =
   let data = file_name |> Read_input.read_input_file |> parse_input in
   let res = solve_part_2 data in
-  Stdlib.Printf.printf "%d\n" res;
-
-  ""
+  res |> Int.to_string
