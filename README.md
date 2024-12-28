@@ -8,7 +8,7 @@ Start development environment
 
 Within the dev environment:
 
-    dune build (builds the project)
+    nix build
     dune runtest (runs tests)
     utop (repl)
 

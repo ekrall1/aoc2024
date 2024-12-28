@@ -89,3 +89,41 @@ let () = assert (Days.D16.part1 day16_test_input3 = "4013")
 let () = assert (Days.D16.part2 day16_test_input = "45")
 let () = assert (Days.D16.part2 day16_test_input2 = "64")
 let () = assert (Days.D16.part2 day16_test_input3 = "14")
+
+(* day 17 tests *)
+let day17_test_input = "../test_data/d17_test"
+let day17_test_input2 = "../test_data/d17_test2"
+let day17_test_input3 = "../test_data/d17_test3"
+let day17_test_input4 = "../test_data/d17_test4"
+let day17_test_input5 = "../test_data/d17_test5"
+let day17_test_input6 = "../test_data/d17_test6"
+
+let () =
+  assert (
+    Days.D17.part1_register day17_test_input
+    = Days.D17.Registers { a = 0; b = 1; c = 9 })
+
+let () = assert (Days.D17.part1 day17_test_input = "")
+let () = assert (Days.D17.part1 day17_test_input2 = "0,1,2")
+
+let () =
+  assert (
+    Days.D17.part1_register day17_test_input3
+    = Days.D17.Registers { a = 0; b = 0; c = 0 })
+
+let () = assert (Days.D17.part1 day17_test_input3 = "4,2,5,6,7,7,7,7,3,1,0")
+
+let () =
+  assert (
+    Days.D17.part1_register day17_test_input4
+    = Days.D17.Registers { a = 0; b = 26; c = 0 })
+
+let () = assert (Days.D17.part1 day17_test_input4 = "")
+
+let () =
+  assert (
+    Days.D17.part1_register day17_test_input5
+    = Days.D17.Registers { a = 0; b = 44354; c = 43690 })
+
+let () = assert (Days.D17.part1 day17_test_input5 = "")
+let () = assert (Days.D17.part1 day17_test_input6 = "4,6,3,5,6,3,5,2,1,0")
