@@ -3,6 +3,7 @@ open Base
 
 (* RAM run
    part 1 - minimum number of steps through the maze after 1024 bytes fall
+   part 2 - first falling byte that blocks all exits
 *)
 
 module IntPair = struct
