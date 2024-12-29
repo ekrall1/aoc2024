@@ -3,6 +3,7 @@ open Base
 
 (* Race condition
    part 1 - find the number of shortcuts that save ge 100 ps
+   part 2 - now the shortcuts can have any distance up to 20
 *)
 
 (* hash table with tuple keys *)
@@ -25,16 +26,10 @@ type grid = Grid of { layout : string array; rows : int; cols : int }
 type start_end = StartEnd of { start_pos : int * int; end_pos : int * int }
 
 type shortcuts =
-  | Shortcuts of { sc : (TupleHT.t, (int * int) list) Base.Hashtbl.t }
-
-type shortcuts_p2 =
-  | ShortcutsP2 of { sc : (TupleHT.t, ((int * int) * int) list) Base.Hashtbl.t }
+  | Shortcuts of { sc : (TupleHT.t, ((int * int) * int) list) Base.Hashtbl.t }
 
 type input =
   | Input of { grid : grid; start_end : start_end; shortcuts : shortcuts }
-
-type input_p2 =
-  | InputP2 of { grid : grid; start_end : start_end; shortcuts : shortcuts_p2 }
 
 type directions = Directions of { dydx : (int * int) list }
 
@@ -71,55 +66,29 @@ let get_neighbors cur_pos (Grid grid : grid) offset =
       && (not (tuple_equal (i, j) cur_pos))
       && not (Char.equal (String.get layout.(i) j) '#'))
 
-let get_shortcuts_p1 cur_pos (Grid grid : grid) offset =
-  let layout = grid.layout in
-  let dydx = match dirs with Directions { dydx } -> dydx in
-
-  let next_neighbors =
-    List.map dydx ~f:(fun (dy, dx) ->
-        (fst cur_pos + (dy * offset), snd cur_pos + (dx * offset)))
-  in
-
-  let walls =
-    List.filter next_neighbors ~f:(fun (i, j) ->
-        (not (out_of_bounds (i, j) (Grid grid)))
-        && (not (tuple_equal (i, j) cur_pos))
-        && Char.equal (String.get layout.(i) j) '#')
-  in
-
-  let shortcuts = ref [] in
-  List.iter walls ~f:(fun (i, j) ->
-      List.iter dydx ~f:(fun (dy, dx) ->
-          shortcuts := (i + dy, j + dx) :: !shortcuts));
-
-  List.filter !shortcuts ~f:(fun (i, j) ->
-      (not (out_of_bounds (i, j) (Grid grid)))
-      && (not (tuple_equal (i, j) cur_pos))
-      && not (Char.equal (String.get layout.(i) j) '#'))
-
 let manhattan_distance (x1, y1) (x2, y2) = Int.abs (x2 - x1) + Int.abs (y2 - y1)
 
-let get_shortcuts_p2 cur_pos coords =
+let get_shortcuts cur_pos coords dist =
   let skips = ref [] in
   let neighbors =
     List.filter coords ~f:(fun n ->
-        (not (tuple_equal n cur_pos)) && manhattan_distance cur_pos n <= 20)
+        (not (tuple_equal n cur_pos)) && manhattan_distance cur_pos n <= dist)
   in
   List.iter neighbors ~f:(fun m ->
       skips := (m, manhattan_distance cur_pos m) :: !skips);
   !skips
 
 (* input *)
-let check_for_shortcuts_p2 (path_lst : (int * int) list) =
+let check_for_shortcuts (path_lst : (int * int) list) dist =
   let shortcuts_hm = Hashtbl.create (module TupleHT) in
 
   List.iter path_lst ~f:(fun (i, j) ->
-      let shortcut_data = get_shortcuts_p2 (i, j) path_lst in
+      let shortcut_data = get_shortcuts (i, j) path_lst dist in
       Hashtbl.set shortcuts_hm ~key:(i, j) ~data:shortcut_data);
 
   shortcuts_hm
 
-let set_inputs_p2 (Grid grid : grid) =
+let set_inputs (Grid grid : grid) ~part =
   let rows = grid.rows in
   let cols = grid.cols in
   let layout = grid.layout in
@@ -144,59 +113,17 @@ let set_inputs_p2 (Grid grid : grid) =
 
   let (start_pos, end_pos), path_lst = points_on_path 0 0 (0, 0) (0, 0) [] in
 
-  let shortcuts_hm = check_for_shortcuts_p2 path_lst in
-  (StartEnd { start_pos; end_pos }, ShortcutsP2 { sc = shortcuts_hm })
+  let shortcut_max = if part = 1 then 2 else 20 in
+  let shortcuts_hm = check_for_shortcuts path_lst shortcut_max in
+  (StartEnd { start_pos; end_pos }, Shortcuts { sc = shortcuts_hm })
 
-let check_for_shortcuts_p1 cur_pos (Grid grid : grid) =
-  let skips = get_shortcuts_p1 cur_pos (Grid grid) 1 in
-  skips
-
-let set_inputs_p1 (Grid grid : grid) =
-  let rows = grid.rows in
-  let cols = grid.cols in
-  let layout = grid.layout in
-  let shortcuts_hm = Hashtbl.create (module TupleHT) in
-
-  let rec finder i j starting ending =
-    if i >= rows then (starting, ending)
-    else if j >= cols then finder (i + 1) 0 starting ending
-    else
-      let elem = String.get layout.(i) j in
-      match elem with
-      | 'E' ->
-          Hashtbl.set shortcuts_hm ~key:(i, j)
-            ~data:(check_for_shortcuts_p1 (i, j) (Grid grid));
-          finder i (j + 1) starting (i, j)
-      | 'S' ->
-          Hashtbl.set shortcuts_hm ~key:(i, j)
-            ~data:(check_for_shortcuts_p1 (i, j) (Grid grid));
-          finder i (j + 1) (i, j) ending
-      | '.' ->
-          Hashtbl.set shortcuts_hm ~key:(i, j)
-            ~data:(check_for_shortcuts_p1 (i, j) (Grid grid));
-          finder i (j + 1) starting ending
-      | _ -> finder i (j + 1) starting ending
-  in
-
-  let startend = finder 0 0 (0, 0) (0, 0) in
-  ( StartEnd { start_pos = fst startend; end_pos = snd startend },
-    Shortcuts { sc = shortcuts_hm } )
-
-let make_input_data str_input =
+let make_input_data str_input ~part =
   let arr = str_input |> Read_input.string_to_lines |> Array.of_list in
   let grid =
     Grid { layout = arr; rows = Array.length arr; cols = String.length arr.(0) }
   in
-  let start_end, shortcuts = set_inputs_p1 grid in
+  let start_end, shortcuts = set_inputs grid ~part in
   Input { grid; start_end; shortcuts }
-
-let make_input_data_p2 str_input =
-  let arr = str_input |> Read_input.string_to_lines |> Array.of_list in
-  let grid =
-    Grid { layout = arr; rows = Array.length arr; cols = String.length arr.(0) }
-  in
-  let start_end, shortcuts = set_inputs_p2 grid in
-  InputP2 { grid; start_end; shortcuts }
 
 (* solution algorithms *)
 let dfs grid start : dfs_result =
@@ -222,33 +149,6 @@ let dfs grid start : dfs_result =
   search [ start ] [] 0
 
 let get_shortcut_count (Shortcuts shortcuts : shortcuts)
-    (DFSResult res : dfs_result) (threshold : int) : int * int =
-  let p1_shortcuts = shortcuts.sc in
-  let distances = res.distance_map in
-  let savings = ref [] in
-  Hashtbl.iter_keys p1_shortcuts ~f:(fun key ->
-      let initial_distance =
-        Hashtbl.find distances key |> Option.value ~default:0
-      in
-      let shorter_distances =
-        Hashtbl.find p1_shortcuts key |> Option.value ~default:[ (-1, -1) ]
-      in
-      List.iter shorter_distances ~f:(fun d ->
-          savings :=
-            initial_distance
-            - (Hashtbl.find distances d |> Option.value ~default:0)
-            - 2
-            :: !savings));
-  let filtered_savings_ge_threshold =
-    List.filter !savings ~f:(fun x -> x > 0 && x >= threshold)
-  in
-  let filtered_savings_eq_threshold =
-    List.filter filtered_savings_ge_threshold ~f:(fun x -> x = threshold)
-  in
-  ( List.length filtered_savings_ge_threshold,
-    List.length filtered_savings_eq_threshold )
-
-let get_shortcut_count_p2 (ShortcutsP2 shortcuts : shortcuts_p2)
     (DFSResult res : dfs_result) (threshold : int) : int * int =
   let p2_shortcuts = shortcuts.sc in
   let distances = res.distance_map in
@@ -278,7 +178,7 @@ let get_shortcut_count_p2 (ShortcutsP2 shortcuts : shortcuts_p2)
 
 let solve_part_1 (file_name : string) (threshold : int) =
   let (Input input) =
-    file_name |> Read_input.read_input_file |> make_input_data
+    file_name |> Read_input.read_input_file |> make_input_data ~part:1
   in
   let (StartEnd start_end) = input.start_end in
   let (Shortcuts shortcuts) = input.shortcuts in
@@ -286,13 +186,13 @@ let solve_part_1 (file_name : string) (threshold : int) =
   get_shortcut_count (Shortcuts shortcuts) (DFSResult res) threshold
 
 let solve_part_2 (file_name : string) (threshold : int) =
-  let (InputP2 input) =
-    file_name |> Read_input.read_input_file |> make_input_data_p2
+  let (Input input) =
+    file_name |> Read_input.read_input_file |> make_input_data ~part:2
   in
   let (StartEnd start_end) = input.start_end in
-  let (ShortcutsP2 shortcuts) = input.shortcuts in
+  let (Shortcuts shortcuts) = input.shortcuts in
   let (DFSResult res) = dfs input.grid start_end.end_pos in
-  get_shortcut_count_p2 (ShortcutsP2 shortcuts) (DFSResult res) threshold
+  get_shortcut_count (Shortcuts shortcuts) (DFSResult res) threshold
 
 let part1 (file_name : string) : string =
   let threshold =
