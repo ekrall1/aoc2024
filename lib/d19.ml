@@ -3,6 +3,7 @@ open Base
 
 (* Linen layout
    part 1 - find how many patterns are possible from combos of given towels
+   part 2 - find the count towel combinations that can form each pattern
 *)
 
 type input = Input of { towels : string list; patterns : string list }
