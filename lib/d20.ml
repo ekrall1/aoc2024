@@ -25,10 +25,16 @@ type grid = Grid of { layout : string array; rows : int; cols : int }
 type start_end = StartEnd of { start_pos : int * int; end_pos : int * int }
 
 type shortcuts =
-  | Shortcuts of { p1 : (TupleHT.t, (int * int) list) Base.Hashtbl.t }
+  | Shortcuts of { sc : (TupleHT.t, (int * int) list) Base.Hashtbl.t }
+
+type shortcuts_p2 =
+  | ShortcutsP2 of { sc : (TupleHT.t, ((int * int) * int) list) Base.Hashtbl.t }
 
 type input =
   | Input of { grid : grid; start_end : start_end; shortcuts : shortcuts }
+
+type input_p2 =
+  | InputP2 of { grid : grid; start_end : start_end; shortcuts : shortcuts_p2 }
 
 type directions = Directions of { dydx : (int * int) list }
 
@@ -91,7 +97,56 @@ let get_shortcuts_p1 cur_pos (Grid grid : grid) offset =
       && (not (tuple_equal (i, j) cur_pos))
       && not (Char.equal (String.get layout.(i) j) '#'))
 
+let manhattan_distance (x1, y1) (x2, y2) = Int.abs (x2 - x1) + Int.abs (y2 - y1)
+
+let get_shortcuts_p2 cur_pos coords =
+  let skips = ref [] in
+  let neighbors =
+    List.filter coords ~f:(fun n ->
+        (not (tuple_equal n cur_pos)) && manhattan_distance cur_pos n <= 20)
+  in
+  List.iter neighbors ~f:(fun m ->
+      skips := (m, manhattan_distance cur_pos m) :: !skips);
+  !skips
+
 (* input *)
+let check_for_shortcuts_p2 (path_lst : (int * int) list) =
+  let shortcuts_hm = Hashtbl.create (module TupleHT) in
+
+  List.iter path_lst ~f:(fun (i, j) ->
+      let shortcut_data = get_shortcuts_p2 (i, j) path_lst in
+      Hashtbl.set shortcuts_hm ~key:(i, j) ~data:shortcut_data);
+
+  shortcuts_hm
+
+let set_inputs_p2 (Grid grid : grid) =
+  let rows = grid.rows in
+  let cols = grid.cols in
+  let layout = grid.layout in
+
+  let rec points_on_path i j start_pos ending lst =
+    if i >= rows then ((start_pos, ending), lst)
+    else if j >= cols then points_on_path (i + 1) 0 start_pos ending lst
+    else
+      let elem = String.get layout.(i) j in
+      match elem with
+      | '#' -> points_on_path i (j + 1) start_pos ending lst
+      | 'E' ->
+          let lst = (i, j) :: lst in
+          points_on_path i (j + 1) start_pos (i, j) lst
+      | 'S' ->
+          let lst = (i, j) :: lst in
+          points_on_path i (j + 1) start_pos (i, j) lst
+      | _ ->
+          let lst = (i, j) :: lst in
+          points_on_path i (j + 1) start_pos ending lst
+  in
+
+  let (start_pos, end_pos), path_lst = points_on_path 0 0 (0, 0) (0, 0) [] in
+
+  let shortcuts_hm = check_for_shortcuts_p2 path_lst in
+  (StartEnd { start_pos; end_pos }, ShortcutsP2 { sc = shortcuts_hm })
+
 let check_for_shortcuts_p1 cur_pos (Grid grid : grid) =
   let skips = get_shortcuts_p1 cur_pos (Grid grid) 1 in
   skips
@@ -125,7 +180,7 @@ let set_inputs_p1 (Grid grid : grid) =
 
   let startend = finder 0 0 (0, 0) (0, 0) in
   ( StartEnd { start_pos = fst startend; end_pos = snd startend },
-    Shortcuts { p1 = shortcuts_hm } )
+    Shortcuts { sc = shortcuts_hm } )
 
 let make_input_data str_input =
   let arr = str_input |> Read_input.string_to_lines |> Array.of_list in
@@ -134,6 +189,14 @@ let make_input_data str_input =
   in
   let start_end, shortcuts = set_inputs_p1 grid in
   Input { grid; start_end; shortcuts }
+
+let make_input_data_p2 str_input =
+  let arr = str_input |> Read_input.string_to_lines |> Array.of_list in
+  let grid =
+    Grid { layout = arr; rows = Array.length arr; cols = String.length arr.(0) }
+  in
+  let start_end, shortcuts = set_inputs_p2 grid in
+  InputP2 { grid; start_end; shortcuts }
 
 (* solution algorithms *)
 let dfs grid start : dfs_result =
@@ -158,9 +221,9 @@ let dfs grid start : dfs_result =
 
   search [ start ] [] 0
 
-let get_shortcut_count_p1 (Shortcuts shortcuts : shortcuts)
+let get_shortcut_count (Shortcuts shortcuts : shortcuts)
     (DFSResult res : dfs_result) (threshold : int) : int * int =
-  let p1_shortcuts = shortcuts.p1 in
+  let p1_shortcuts = shortcuts.sc in
   let distances = res.distance_map in
   let savings = ref [] in
   Hashtbl.iter_keys p1_shortcuts ~f:(fun key ->
@@ -185,22 +248,62 @@ let get_shortcut_count_p1 (Shortcuts shortcuts : shortcuts)
   ( List.length filtered_savings_ge_threshold,
     List.length filtered_savings_eq_threshold )
 
-let solve_part_1 (Input input : input) (threshold : int) =
-  let (StartEnd start_end) = input.start_end in
-  let (Shortcuts shortcuts) = input.shortcuts in
-  let (DFSResult res) = dfs input.grid start_end.end_pos in
-  get_shortcut_count_p1 (Shortcuts shortcuts) (DFSResult res) threshold
+let get_shortcut_count_p2 (ShortcutsP2 shortcuts : shortcuts_p2)
+    (DFSResult res : dfs_result) (threshold : int) : int * int =
+  let p2_shortcuts = shortcuts.sc in
+  let distances = res.distance_map in
+  let savings = ref [] in
+  Hashtbl.iter_keys p2_shortcuts ~f:(fun key ->
+      let initial_distance =
+        Hashtbl.find distances key |> Option.value ~default:0
+      in
+      let shorter_distances =
+        Hashtbl.find p2_shortcuts key
+        |> Option.value ~default:[ ((-1, -1), -1) ]
+      in
+      List.iter shorter_distances ~f:(fun d ->
+          savings :=
+            initial_distance
+            - (Hashtbl.find distances (fst d) |> Option.value ~default:0)
+            - snd d
+            :: !savings));
+  let filtered_savings_ge_threshold =
+    List.filter !savings ~f:(fun x -> x > 0 && x >= threshold)
+  in
+  let filtered_savings_eq_threshold =
+    List.filter filtered_savings_ge_threshold ~f:(fun x -> x = threshold)
+  in
+  ( List.length filtered_savings_ge_threshold,
+    List.length filtered_savings_eq_threshold )
 
-let solve_part_2 file_name = file_name
-
-let part1 (file_name : string) : string =
+let solve_part_1 (file_name : string) (threshold : int) =
   let (Input input) =
     file_name |> Read_input.read_input_file |> make_input_data
   in
+  let (StartEnd start_end) = input.start_end in
+  let (Shortcuts shortcuts) = input.shortcuts in
+  let (DFSResult res) = dfs input.grid start_end.end_pos in
+  get_shortcut_count (Shortcuts shortcuts) (DFSResult res) threshold
+
+let solve_part_2 (file_name : string) (threshold : int) =
+  let (InputP2 input) =
+    file_name |> Read_input.read_input_file |> make_input_data_p2
+  in
+  let (StartEnd start_end) = input.start_end in
+  let (ShortcutsP2 shortcuts) = input.shortcuts in
+  let (DFSResult res) = dfs input.grid start_end.end_pos in
+  get_shortcut_count_p2 (ShortcutsP2 shortcuts) (DFSResult res) threshold
+
+let part1 (file_name : string) : string =
   let threshold =
     if String.is_substring file_name ~substring:"test_data" then 2 else 100
   in
-  let ans = solve_part_1 (Input input) threshold in
+  let ans = solve_part_1 file_name threshold in
   Printf.sprintf "ge: %d, eq: %d" (fst ans) (snd ans)
 
-let part2 (file_name : string) : string = solve_part_2 file_name
+let part2 (file_name : string) : string =
+  let threshold =
+    if String.is_substring file_name ~substring:"test_data" then 76 else 100
+  in
+  let ans = solve_part_2 file_name threshold in
+  Printf.sprintf "ge: %d, eq: %d" (fst ans) (snd ans)
