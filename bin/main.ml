@@ -39,6 +39,7 @@ let () =
     | 18 -> (Days.D18.part1, Days.D18.part2)
     | 19 -> (Days.D19.part1, Days.D19.part2)
     | 20 -> (Days.D20.part1, Days.D20.part2)
+    | 21 -> (Days.D21.part1, Days.D21.part2)
     | _ -> failwith "Invalid day"
   in
 
