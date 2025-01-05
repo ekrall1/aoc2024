@@ -176,4 +176,7 @@ let () = assert (Days.D21.part2 day21_test_input = "154115708116294")
 
 (* day 22 tests *)
 let day22_test_input = "../test_data/d22_test"
+let day22_test_input2 = "../test_data/d22_test2"
 let () = assert (Days.D22.part1 day22_test_input = "37327623")
+let () = assert (Days.D22.part2 day22_test_input = "24")
+let () = assert (Days.D22.part2 day22_test_input2 = "23")
