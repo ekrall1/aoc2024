@@ -33,6 +33,32 @@ let update_network_set set lst =
   let sorted_lst = List.sort lst ~compare:(fun x y -> String.compare x y) in
   Set.add !set (String.concat ~sep:"," sorted_lst)
 
+(* bron-kerbosch with pivoting, for finding maximal clique *)
+(* https://en.wikipedia.org/wiki/Bron%E2%80%93Kerbosch_algorithm *)
+(* https://www.mancoosi.org/~abate/finding-maximal-cliques-and-independent-sets-undirected-graph-bron%E2%80%93kerbosch-algorithm.html *)
+(* todo: it would be nice to use z3 and an integer program to solve for the maximal clique*)
+
+let rec bron_kerbosch (r : (string, Base.String.comparator_witness) Base.Set.t)
+    (p : (string, Base.String.comparator_witness) Base.Set.t)
+    (x : (string, Base.String.comparator_witness) Base.Set.t)
+    (graph :
+      ( string,
+        (string, Base.String.comparator_witness) Base.Set.t )
+      Base.Hashtbl.t) =
+  if Set.is_empty p && Set.is_empty x then [ Set.to_list r ]
+  else
+    let _, _, result =
+      Set.fold p ~init:(p, x, []) ~f:(fun (p, x, acc) vertex ->
+          let r' = Set.add r vertex in
+          let p' = Set.inter p (Hashtbl.find_exn graph vertex) in
+          let x' = Set.inter x (Hashtbl.find_exn graph vertex) in
+          ( Set.remove p vertex,
+            Set.add x vertex,
+            bron_kerbosch r' p' x' graph @ acc ))
+    in
+
+    result
+
 let solve_part_1 input_lst =
   let network_trips = ref (Set.empty (module String)) in
   let graph = make_graph input_lst in
@@ -55,9 +81,28 @@ let solve_part_1 input_lst =
   find_networks_of_three graph network_trips initial_nodes
   |> Set.length |> Int.to_string
 
+let solve_part_2 input_lst =
+  let graph = make_graph input_lst in
+
+  let p = Set.of_list (module String) (Hashtbl.keys graph) in
+  let x = Set.empty (module String) in
+  let r = Set.empty (module String) in
+
+  let cliques = bron_kerbosch r p x graph in
+
+  match
+    List.max_elt cliques ~compare:(fun x1 x2 ->
+        compare (List.length x1) (List.length x2))
+  with
+  | None -> failwith "no cliques for part 2"
+  | Some clique ->
+      String.concat ~sep:","
+        (List.sort clique ~compare:(fun a b -> String.compare a b))
+
 let part1 (file_name : string) : string =
   file_name |> Read_input.read_input_file |> Read_input.string_to_lines
   |> solve_part_1
 
 let part2 (file_name : string) : string =
-  Printf.sprintf "%s not implemented for part 2" file_name
+  file_name |> Read_input.read_input_file |> Read_input.string_to_lines
+  |> solve_part_2
