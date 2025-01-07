@@ -1,7 +1,6 @@
 open Z3
 open Read_input
 open Base
-open Str
 
 (*** Logic circuit solver - Advent of code day 24 ***)
 
@@ -238,7 +237,7 @@ let solver (Input input : input) =
   let constraint_hm = Hashtbl.create (module String) in
 
   (* objective fcn *)
-  let (z, obj), (obj_c1, obj_c2) = make_obj ctx in
+  let (_, obj), (obj_c1, obj_c2) = make_obj ctx in
 
   (* 0, 1 bounds *)
   let () = make_var_constriants ctx var_hm constraint_hm in
@@ -256,8 +255,6 @@ let solver (Input input : input) =
   Optimize.add opt ([ obj_c1; obj_c2 ] @ Hashtbl.data constraint_hm);
 
   let _ = Optimize.minimize opt obj in
-
-  let z_results = Hashtbl.create (module String) in
 
   let res =
     match Optimize.check opt with
