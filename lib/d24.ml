@@ -303,6 +303,64 @@ let parse_gates lst =
           rhs = List.nth_exn x 4;
         })
 
+let xy_lhs lhs =
+  List.exists [ "x"; "y" ] ~f:(fun p -> String.is_prefix lhs ~prefix:p)
+
+let check_for_output_connections (Gate g : gate) (lst : gate list) (op : string)
+    =
+  List.filter lst ~f:(fun (Gate h) ->
+      String.equal h.logical op
+      && (String.equal h.lhs1 g.rhs || String.equal h.lhs2 g.rhs))
+
+(* z bits should come from xor unless it is the most significant bit*)
+let invalid_z_output (lst : gate list) ~msb =
+  List.filter lst ~f:(fun (Gate g) ->
+      String.is_prefix g.rhs ~prefix:"z"
+      && (not (String.equal "XOR" g.logical))
+      && not (String.equal g.rhs msb))
+
+(* if xor is not getting input from an x or y, and does not output a z bit,
+   then its output cannot be going to the right place in the adder circuit*)
+let invalid_xor_logic_config (lst : gate list) =
+  List.filter lst ~f:(fun (Gate g) ->
+      String.equal "XOR" g.logical
+      && (not (xy_lhs g.lhs1))
+      && (not (xy_lhs g.lhs2))
+      && not (String.is_prefix g.rhs ~prefix:"z"))
+
+(* if an xor has x or y input bits, and does not output to another xor's input,
+   then its output cannot be going to the right place
+   (unless it the least significant bit which is a half adder) *)
+let input_xor_not_feeding_xor (lst : gate list) ~lsb_sub =
+  List.filter lst ~f:(fun (Gate g) ->
+      (not (String.is_substring g.lhs1 ~substring:lsb_sub))
+      && String.equal "XOR" g.logical
+      && (xy_lhs g.lhs1 || xy_lhs g.lhs2)
+      && List.length (check_for_output_connections (Gate g) lst "XOR") = 0)
+
+(* an and output must go to an or in a full adder,
+   exclude the least significant bit because and is used for the carry (half-adder) *)
+let and_not_feeding_or (lst : gate list) ~lsb_sub =
+  List.filter lst ~f:(fun (Gate g) ->
+      (not (String.is_substring g.lhs1 ~substring:lsb_sub))
+      && String.equal "AND" g.logical
+      && (xy_lhs g.lhs1 || xy_lhs g.lhs2)
+      && List.length (check_for_output_connections (Gate g) lst "OR") = 0)
+
+let get_invalid_wire_set (lst : gate list) ~msb ~lsb_sub =
+  Set.of_list
+    (module String)
+    (List.map
+       (List.concat
+          [
+            invalid_z_output lst ~msb;
+            invalid_xor_logic_config lst;
+            input_xor_not_feeding_xor lst ~lsb_sub;
+            and_not_feeding_or lst ~lsb_sub;
+          ])
+       ~f:(fun (Gate g) -> g.rhs))
+
+(* part 1 uses a mixed-integer programming formulation *)
 let solve_part_1 input_str =
   let unparsed = input_str |> Str.split (Str.regexp "\n\n+") in
 
@@ -317,7 +375,12 @@ let solve_part_1 input_str =
   let z_results = solver model_input in
   Int.of_string ("0b" ^ String.concat (List.map z_results ~f:(fun x -> snd x)))
 
-let solve_part_2 input_str =
+(* for part2, use a completely different approach.
+   inspect the adders for invalid circuit components, and record the wires.
+   this iterates the list of gates multiple times but is likely better
+   than recursively trying combination of swaps and re-solving part 1 each time
+*)
+let solve_part_2 input_str full_input =
   let unparsed = input_str |> Str.split (Str.regexp "\n\n+") in
 
   let model_input =
@@ -328,13 +391,19 @@ let solve_part_2 input_str =
       }
   in
 
-  let z_results = solver model_input in
-  "0b" ^ String.concat (List.map z_results ~f:(fun x -> snd x))
+  let (Input model_input) = model_input in
+
+  let msb = if full_input then "z45" else "z12" in
+  let swap_list = get_invalid_wire_set model_input.gates ~msb ~lsb_sub:"00" in
+
+  String.concat ~sep:","
+    (List.sort (Set.to_list swap_list) ~compare:(fun a b -> String.compare a b))
 
 let part1 (file_name : string) =
   let input_str = file_name |> Read_input.read_input_file in
   solve_part_1 input_str |> Int.to_string
 
 let part2 (file_name : string) =
+  let full_input = not (String.is_substring file_name ~substring:"test") in
   let input_str = file_name |> Read_input.read_input_file in
-  solve_part_2 input_str
+  solve_part_2 input_str full_input
