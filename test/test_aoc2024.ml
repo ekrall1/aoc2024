@@ -194,3 +194,8 @@ let () =
   assert (
     Days.D24.part2 day24_test_input
     = "ffh,mjb,tgd,wpb,z02,z03,z05,z06,z07,z08,z10,z11")
+
+(* day 25 tests *)
+let day25_test_input = "../test_data/d25_test"
+let () = assert (Days.D25.part1 day25_test_input = "3")
+let () = assert (Days.D25.part2 day25_test_input = "the end")
