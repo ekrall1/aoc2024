@@ -13,6 +13,8 @@ jobs:
     displayName: "Run format and test checks"
     pool:
       name: Default
+    variables:
+      BASH_ENV: /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
     steps:
       - checkout: self
 
