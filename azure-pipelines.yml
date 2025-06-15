@@ -1,0 +1,40 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - '*'
+
+jobs:
+  - job: FormatAndTest
+    displayName: "Run format and test checks"
+    pool:
+      name: Default
+    steps:
+      - checkout: self
+
+      - script: |
+          nix flake check
+        displayName: "Run nix flake check"
+
+  - job: Build
+    displayName: "Build"
+    dependsOn: FormatAndTest
+    pool:
+      name: Default
+    steps:
+      - checkout: self
+
+      - script: |
+          nix build
+        displayName: "Build project"
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish build artifact"
+        inputs:
+          PathtoPublish: 'result/_build/default/bin/main.exe'
+          ArtifactName: 'aoc2024-build-artifact'
+          publishLocation: 'Container'
