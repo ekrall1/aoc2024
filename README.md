@@ -15,3 +15,4 @@ Within the dev environment:
 Get the solution for a specific day/part
 
     aoc2024 -day-of-advent 1 -part 1 -input "test_data/d1_test"
+
